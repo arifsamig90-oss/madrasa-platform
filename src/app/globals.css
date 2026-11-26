@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f7f6f2;
+  --card: #ffffff;
+  --ink: #1d2a25;
+  --muted: #5f6b66;
+  --line: #e3e0d8;
+  --brand: #1f6b4f;
+  --brand-ink: #ffffff;
+  --ok: #1f7a4a;
+  --bad: #b3372e;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 1rem; }
+.btn { display: inline-flex; align-items: center; gap: .4rem; background: var(--brand); color: var(--brand-ink); border-radius: 8px; padding: .5rem .9rem; font-weight: 600; }
+.btn:hover { filter: brightness(1.08); }
+.btn-ghost { background: transparent; color: var(--brand); border: 1px solid var(--line); }
+.input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: .5rem .7rem; background: #fff; }
+.label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .25rem; }
+.muted { color: var(--muted); }
+.pill { display: inline-block; border-radius: 999px; padding: .1rem .55rem; font-size: .8rem; border: 1px solid var(--line); }
+.pill-ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, white); background: color-mix(in srgb, var(--ok) 8%, white); }
+.pill-bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, white); background: color-mix(in srgb, var(--bad) 8%, white); }
+h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
+h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; }
+table { border-collapse: collapse; }
+th, td { border-bottom: 1px solid var(--line); padding: .4rem .5rem; text-align: left; }
