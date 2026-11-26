@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+  ACCOUNTANT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+/// Who a group is for: brothers, sisters, or mixed (e.g. young children).
+enum GroupAudience {
+  MALE
+  FEMALE
+  MIXED
+}
+
+enum Attendance {
+  PRESENT
+  LATE
+  ABSENT
+  EXCUSED
+}
+
+/// Pass/fail is the main mark. A numeric score is optional.
+enum Result {
+  PASSED
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String?  @unique
+  phone        String?  @unique
+  name         String
+  gender       Gender
+  passwordHash String
+  roles        Role[]
+  createdAt    DateTime @default(now())
+
+  children ParentChild[] @relation("parent")
+  parents  ParentChild[] @relation("child")
+
+  teaching    Group[]        @relation("teacher")
+  memberships GroupMember[]
+  records     LessonRecord[]
+  invitesMade Invite[]       @relation("inviter")
+}
+
+model ParentChild {
+  parentId String
+  childId  String
+  parent   User   @relation("parent", fields: [parentId], references: [id], onDelete: Cascade)
+  child    User   @relation("child", fields: [childId], references: [id], onDelete: Cascade)
+
+  @@id([parentId, childId])
+}
+
+/// Sunday school, madrasa, and later courses or tutoring.
+model Department {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  groups Group[]
+}
+
+model Group {
+  id           String        @id @default(cuid())
+  name         String
+  audience     GroupAudience
+  departmentId String
+  teacherId    String?
+  department   Department    @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  teacher      User?         @relation("teacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  members      GroupMember[]
+  lessons      Lesson[]
+  invites      Invite[]
+
+  @@unique([departmentId, name])
+}
+
+model GroupMember {
+  groupId   String
+  studentId String
+  group     Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, studentId])
+}
+
+model Lesson {
+  id          String         @id @default(cuid())
+  groupId     String
+  startsAt    DateTime
+  durationMin Int            @default(60)
+  topic       String
+  location    String?
+  onlineUrl   String?
+  homework    String?
+  group       Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  records     LessonRecord[]
+
+  @@index([groupId, startsAt])
+}
+
+/// One student's attendance and mark for one lesson.
+model LessonRecord {
+  lessonId   String
+  studentId  String
+  attendance Attendance?
+  result     Result?
+  score      Int?
+  comment    String?
+  updatedAt  DateTime    @updatedAt
+  lesson     Lesson      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student    User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([lessonId, studentId])
+}
+
+/// A one-time link to register. For STUDENT it can put the person into a group;
+/// for PARENT it links them to a child.
+model Invite {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  role      Role
+  groupId   String?
+  childId   String?
+  createdBy String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  group     Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  inviter   User      @relation("inviter", fields: [createdBy], references: [id], onDelete: Cascade)
+}
